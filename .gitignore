@@ -1,0 +1,11 @@
+# Composer lock file
+/composer.lock
+
+# 3rd party libs
+/vendor
+
+# Test results
+/test-results
+
+# Generated API Docs
+/docs
