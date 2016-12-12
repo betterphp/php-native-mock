@@ -3,6 +3,18 @@ Helper class to mock or redefine native PHP functions in unit tests. Works using
 
 [![Build Status](https://ci.jacekk.co.uk/buildStatus/icon?job=PHP%20Native%20Mock)](https://ci.jacekk.co.uk/job/PHP%20Native%20Mock)
 
+This is largely a wrapper around the uopz functions with some extra bits thrown in to make it a bit easier in tests. It basically relies on dark magic and, like all magic, should only be used very carefully. Creating weird behaviour in applications is very easy, for example
+
+~~~php
+$this->redefineFunction('substr', function () {
+    return 'Doge';
+});
+~~~
+
+would have some very strange effects.
+
+Most of the time when redefining a function sounds like a good idea - it's probably not, make sure there is no way a "normal" mocking approach won't work first.
+
 ## Installation
 The library can be included via composer by adding a custom repo and the project name
 ~~~json
