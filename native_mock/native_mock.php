@@ -8,6 +8,7 @@ trait native_mock {
 
     private $redefined_functions;
     private $redefined_methods;
+    private $hooked_functions;
 
     /**
      * Should be called from TestCase::setUp()
@@ -21,6 +22,7 @@ trait native_mock {
 
         $this->redefined_functions = [];
         $this->redefined_methods = [];
+        $this->hooked_functions = [];
     }
 
     /**
@@ -37,6 +39,10 @@ trait native_mock {
             list($class_name, $method_name) = $method;
 
             $this->resetMethod($class_name, $method_name);
+        }
+
+        foreach ($this->hooked_functions as $function_name) {
+            $this->removeFunctionHook($function_name);
         }
     }
 
@@ -111,6 +117,38 @@ trait native_mock {
             $this->redefined_methods,
             function ($redefined) use ($class_name, $method_name) {
                 return $class_name === $redefined[0] && $method_name === $redefined[1];
+            }
+        );
+    }
+
+    /**
+     * Sets a hook to be called when a function is executed
+     *
+     * @param string $function_name The name of the function to hook
+     * @param \Closure $hook The hook to call
+     *
+     * @return void
+     */
+    public function setFunctionHook(string $function_name, \Closure $hook) {
+        uopz_set_hook($function_name, $hook);
+
+        $this->hooked_functions[] = $function_name;
+    }
+
+    /**
+     * Removes a hook from a function
+     *
+     * @param string $function_name The name of the function
+     *
+     * @return void
+     */
+    public function removeFunctionHook(string $function_name) {
+        uopz_unset_hook($function_name);
+
+        $this->hooked_functions = array_filter(
+            $this->hooked_functions,
+            function ($hooked) use ($function_name) {
+                return $hooked !== $function_name;
             }
         );
     }

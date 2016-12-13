@@ -106,4 +106,58 @@ class NativeMockTest extends TestCase {
         $this->assertSame($initial_value, $test_object->format('Y-m-d'));
     }
 
+    public function testHookNativeFunction() {
+        $read_files = [];
+
+        $this->setFunctionHook('file_get_contents', function ($file_name) use (&$read_files) {
+            $read_files[] = $file_name;
+        });
+
+        file_get_contents(__FILE__);
+
+        $this->assertContains(__FILE__, $read_files);
+    }
+
+    public function testHookFunctionRemovedAfterTest() {
+        $this->assertSame(null, uopz_get_hook('file_get_contents'));
+    }
+
+    public function testHookUserFunction() {
+        $expected_value = 'What an interesting value';
+
+        // Inner function are normally not a good idea but we need one to test with here
+        function another_example_user_function() { //@codingStandardsIgnoreLine
+            return 'nothing of much interest';
+        }
+
+        $this->setFunctionHook('another_example_user_function', function () use ($expected_value) {
+            define('ANOTHER_TEST_CONSTANT', $expected_value);
+        });
+
+        another_example_user_function();
+
+        $this->assertSame($expected_value, ANOTHER_TEST_CONSTANT);
+    }
+
+    public function testRemoveFunctionHook() {
+        $expected_value = 'Some kind of value to expect';
+        $test_variable = null;
+
+        $this->setFunctionHook('file_get_contents', function () use ($expected_value, &$test_variable) {
+            $test_variable = $expected_value;
+        });
+
+        file_get_contents(__FILE__);
+
+        $this->assertSame($expected_value, $test_variable);
+
+        $test_variable = null;
+
+        $this->removeFunctionHook('file_get_contents');
+
+        file_get_contents(__FILE__);
+
+        $this->assertSame(null, $test_variable);
+    }
+
 }
