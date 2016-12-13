@@ -139,7 +139,7 @@ trait native_mock {
      *
      * @return void
      */
-    public function resetMethod(string $class_name, string $method_name) {
+    protected function resetMethod(string $class_name, string $method_name) {
         uopz_unset_return($class_name, $method_name);
 
         $this->redefined_methods = array_filter(
@@ -158,7 +158,7 @@ trait native_mock {
      *
      * @return void
      */
-    public function setFunctionHook(string $function_name, \Closure $hook) {
+    protected function setFunctionHook(string $function_name, \Closure $hook) {
         uopz_set_hook($function_name, $hook);
 
         $this->hooked_functions[] = $function_name;
@@ -171,7 +171,7 @@ trait native_mock {
      *
      * @return void
      */
-    public function removeFunctionHook(string $function_name) {
+    protected function removeFunctionHook(string $function_name) {
         uopz_unset_hook($function_name);
 
         $this->hooked_functions = array_filter(
