@@ -6,6 +6,9 @@ use PHPUnit\Framework\TestCase;
 
 use betterphp\native_mock\native_mock;
 
+/**
+ * @covers betterphp\native_mock\native_mock
+ */
 class NativeMockTest extends TestCase {
 
     use native_mock;
@@ -28,7 +31,10 @@ class NativeMockTest extends TestCase {
         $this->assertSame($expected_value, strpos('not used', 'not used'));
     }
 
-    public function testRedefinedFunctionsReset() {
+    /**
+     * @depends testRedefineNativeFunction
+     */
+    public function testRedefinedFunctionsResetAfterTest() {
         $test_string = 'such test, very string, wow.';
 
         $this->assertSame(11, strpos($test_string, 'very'));
