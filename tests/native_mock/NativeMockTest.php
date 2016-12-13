@@ -69,4 +69,41 @@ class NativeMockTest extends TestCase {
         $this->assertNotSame($expected_value, file_get_contents(__FILE__));
     }
 
+    public function testRedefineNativeMethod() {
+        $test_object = new \DateTime();
+        $initial_value = $test_object->format('Y-m-d');
+        $expected_value = 'this isn\'t a date!';
+
+        $this->redefineMethod(\DateTime::class, 'format', function () use ($expected_value) {
+            return $expected_value;
+        });
+
+        $actual_value = $test_object->format('Y-m-d');
+
+        $this->assertNotSame($initial_value, $actual_value);
+        $this->assertSame($expected_value, $actual_value);
+    }
+
+    public function testRedefinedMethodResetAfterTest() {
+        $test_object = new \DateTime();
+
+        $this->assertSame(date('Y-m-d'), $test_object->format('Y-m-d'));
+    }
+
+    public function testResetMethod() {
+        $test_object = new \DateTime();
+        $initial_value = $test_object->format('Y-m-d');
+        $expected_value = 'very format, many date, wow.';
+
+        $this->redefineMethod(\DateTime::class, 'format', function () use ($expected_value) {
+            return $expected_value;
+        });
+
+        $this->assertSame($expected_value, $test_object->format('Y-m-d'));
+
+        $this->resetMethod(\DateTime::class, 'format');
+
+        $this->assertSame($initial_value, $test_object->format('Y-m-d'));
+    }
+
 }
