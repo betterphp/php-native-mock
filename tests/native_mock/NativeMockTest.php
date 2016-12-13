@@ -23,12 +23,14 @@ class NativeMockTest extends TestCase {
 
     public function testRedefineNativeFunction() {
         $expected_value = 400;
+        $function_name = 'strpos';
 
-        $this->redefineFunction('strpos', function () use ($expected_value) {
+        $this->redefineFunction($function_name, function () use ($expected_value) {
             return $expected_value;
         });
 
-        $this->assertSame($expected_value, strpos('not used', 'not used'));
+        $this->assertSame($expected_value, $function_name('not used', 'not used'));
+        $this->assertContains($function_name, $this->getRedefinedFunctions());
     }
 
     /**
@@ -36,8 +38,10 @@ class NativeMockTest extends TestCase {
      */
     public function testRedefinedFunctionsResetAfterTest() {
         $test_string = 'such test, very string, wow.';
+        $function_name = 'strpos';
 
-        $this->assertSame(11, strpos($test_string, 'very'));
+        $this->assertSame(11, $function_name($test_string, 'very'));
+        $this->assertNotContains($function_name, $this->getHookedFunctions());
     }
 
     public function testRedefineUserfunction() {
@@ -48,25 +52,31 @@ class NativeMockTest extends TestCase {
             return 'nothing like the above';
         }
 
-        $this->redefineFunction('example_user_function', function () use ($test_string) {
+        $function_name = 'example_user_function';
+
+        $this->redefineFunction($function_name, function () use ($test_string) {
             return $test_string;
         });
 
-        $this->assertSame($test_string, example_user_function());
+        $this->assertSame($test_string, $function_name());
+        $this->assertContains($function_name, $this->getRedefinedFunctions());
     }
 
     public function testResetfunction() {
         $expected_value = 'crikey this isn\'t a file';
+        $function_name = 'file_get_contents';
 
-        $this->redefineFunction('file_get_contents', function () use ($expected_value) {
+        $this->redefineFunction($function_name, function () use ($expected_value) {
             return $expected_value;
         });
 
-        $this->assertSame($expected_value, file_get_contents(__FILE__));
+        $this->assertSame($expected_value, $function_name(__FILE__));
+        $this->assertContains($function_name, $this->getRedefinedFunctions());
 
-        $this->resetFunction('file_get_contents');
+        $this->resetFunction($function_name);
 
-        $this->assertNotSame($expected_value, file_get_contents(__FILE__));
+        $this->assertNotSame($expected_value, $function_name(__FILE__));
+        $this->assertNotContains($function_name, $this->getRedefinedFunctions());
     }
 
     public function testRedefineNativeMethod() {
@@ -82,12 +92,14 @@ class NativeMockTest extends TestCase {
 
         $this->assertNotSame($initial_value, $actual_value);
         $this->assertSame($expected_value, $actual_value);
+        $this->assertContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
     }
 
     public function testRedefinedMethodResetAfterTest() {
         $test_object = new \DateTime();
 
         $this->assertSame(date('Y-m-d'), $test_object->format('Y-m-d'));
+        $this->assertNotContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
     }
 
     public function testResetMethod() {
@@ -100,26 +112,34 @@ class NativeMockTest extends TestCase {
         });
 
         $this->assertSame($expected_value, $test_object->format('Y-m-d'));
+        $this->assertContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
 
         $this->resetMethod(\DateTime::class, 'format');
 
         $this->assertSame($initial_value, $test_object->format('Y-m-d'));
+        $this->assertNotContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
     }
 
     public function testHookNativeFunction() {
         $read_files = [];
 
-        $this->setFunctionHook('file_get_contents', function ($file_name) use (&$read_files) {
+        $function_name = 'file_get_contents';
+
+        $this->setFunctionHook($function_name, function ($file_name) use (&$read_files) {
             $read_files[] = $file_name;
         });
 
-        file_get_contents(__FILE__);
+        $function_name(__FILE__);
 
         $this->assertContains(__FILE__, $read_files);
+        $this->assertContains($function_name, $this->getHookedFunctions());
     }
 
     public function testHookFunctionRemovedAfterTest() {
-        $this->assertSame(null, uopz_get_hook('file_get_contents'));
+        $function_name = 'file_get_contents';
+
+        $this->assertSame(null, uopz_get_hook($function_name));
+        $this->assertNotContains($function_name, $this->getHookedFunctions());
     }
 
     public function testHookUserFunction() {
@@ -130,34 +150,41 @@ class NativeMockTest extends TestCase {
             return 'nothing of much interest';
         }
 
-        $this->setFunctionHook('another_example_user_function', function () use ($expected_value) {
+        $function_name = 'another_example_user_function';
+
+        $this->setFunctionHook($function_name, function () use ($expected_value) {
             define('ANOTHER_TEST_CONSTANT', $expected_value);
         });
 
-        another_example_user_function();
+        $function_name();
 
         $this->assertSame($expected_value, ANOTHER_TEST_CONSTANT);
+        $this->assertContains($function_name, $this->getHookedFunctions());
     }
 
     public function testRemoveFunctionHook() {
         $expected_value = 'Some kind of value to expect';
         $test_variable = null;
 
-        $this->setFunctionHook('file_get_contents', function () use ($expected_value, &$test_variable) {
+        $function_name = 'file_get_contents';
+
+        $this->setFunctionHook($function_name, function () use ($expected_value, &$test_variable) {
             $test_variable = $expected_value;
         });
 
-        file_get_contents(__FILE__);
+        $function_name(__FILE__);
 
         $this->assertSame($expected_value, $test_variable);
+        $this->assertContains($function_name, $this->getHookedFunctions());
 
         $test_variable = null;
 
-        $this->removeFunctionHook('file_get_contents');
+        $this->removeFunctionHook($function_name);
 
-        file_get_contents(__FILE__);
+        $function_name(__FILE__);
 
         $this->assertSame(null, $test_variable);
+        $this->assertNotContains($function_name, $this->getHookedFunctions());
     }
 
 }

@@ -47,6 +47,35 @@ trait native_mock {
     }
 
     /**
+     * Gets a list of functions that have been redefined
+     *
+     * @return array A list of function names
+     */
+    protected function getRedefinedFunctions(): array {
+        return $this->redefined_functions;
+    }
+
+    /**
+     * Gets a list of methods that have been redefined
+     *
+     * Each entry is an array containing two properties, the class then method name
+     *
+     * @return array A list of methods
+     */
+    protected function getRedefinedMethods(): array {
+        return $this->redefined_methods;
+    }
+
+    /**
+     * Gets a list of functions that have had hooks set
+     *
+     * @return array A list of function names
+     */
+    protected function getHookedFunctions(): array {
+        return $this->hooked_functions;
+    }
+
+    /**
      * Redefined a built-in or user defined function
      *
      * It's a good idea to make the new function accept either no parameters
@@ -116,7 +145,7 @@ trait native_mock {
         $this->redefined_methods = array_filter(
             $this->redefined_methods,
             function ($redefined) use ($class_name, $method_name) {
-                return $class_name === $redefined[0] && $method_name === $redefined[1];
+                return $class_name !== $redefined[0] && $method_name !== $redefined[1];
             }
         );
     }
