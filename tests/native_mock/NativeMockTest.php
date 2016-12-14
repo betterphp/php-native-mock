@@ -135,6 +135,9 @@ class NativeMockTest extends TestCase {
         $this->assertContains($function_name, $this->getHookedFunctions());
     }
 
+    /**
+     * @depends testHookNativeFunction
+     */
     public function testHookFunctionRemovedAfterTest() {
         $function_name = 'file_get_contents';
 
@@ -203,6 +206,9 @@ class NativeMockTest extends TestCase {
         $this->assertContains([\DateTime::class, 'format'], $this->getHookedMethods());
     }
 
+    /**
+     * @depends testHookMethod
+     */
     public function testHookMethodRemovedAfterTest() {
         $method = [\DateTime::class, 'format'];
 
