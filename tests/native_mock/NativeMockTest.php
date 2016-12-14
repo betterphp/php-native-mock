@@ -187,4 +187,56 @@ class NativeMockTest extends TestCase {
         $this->assertNotContains($function_name, $this->getHookedFunctions());
     }
 
+    public function testHookMethod() {
+        $test_object = new \DateTime();
+        $formats_used = [];
+
+        $this->setMethodHook(\DateTime::class, 'format', function ($format) use (&$formats_used) {
+            $formats_used[] = $format;
+        });
+
+        $test_format = 'Y-m-d';
+
+        $test_object->format($test_format);
+
+        $this->assertContains($test_format, $formats_used);
+        $this->assertContains([\DateTime::class, 'format'], $this->getHookedMethods());
+    }
+
+    public function testHookMethodRemovedAfterTest() {
+        $method = [\DateTime::class, 'format'];
+
+        $this->assertSame(null, uopz_get_hook($method[0], $method[1]));
+        $this->assertNotContains($method, $this->getHookedMethods());
+    }
+
+    public function testRemoveMethodnHook() {
+        $expected_value = 'Some kind of value to expect';
+        $test_variable = null;
+
+        $method = [\DateTime::class, 'format'];
+        list($class_name, $method_name) = $method;
+
+        $test_object = new $class_name();
+        $test_format = 'Y-m-d';
+
+        $this->setMethodHook($class_name, $method_name, function () use ($expected_value, &$test_variable) {
+            $test_variable = $expected_value;
+        });
+
+        $test_object->$method_name($test_format);
+
+        $this->assertSame($expected_value, $test_variable);
+        $this->assertContains($method, $this->getHookedMethods());
+
+        $test_variable = null;
+
+        $this->removeMethodHook($class_name, $method_name);
+
+        $test_object->$method_name($test_format);
+
+        $this->assertSame(null, $test_variable);
+        $this->assertNotContains($method, $this->getHookedMethods());
+    }
+
 }

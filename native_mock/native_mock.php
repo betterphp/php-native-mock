@@ -9,6 +9,7 @@ trait native_mock {
     private $redefined_functions;
     private $redefined_methods;
     private $hooked_functions;
+    private $hooked_methods;
 
     /**
      * Should be called from TestCase::setUp()
@@ -23,6 +24,7 @@ trait native_mock {
         $this->redefined_functions = [];
         $this->redefined_methods = [];
         $this->hooked_functions = [];
+        $this->hooked_methods = [];
     }
 
     /**
@@ -43,6 +45,12 @@ trait native_mock {
 
         foreach ($this->hooked_functions as $function_name) {
             $this->removeFunctionHook($function_name);
+        }
+
+        foreach ($this->hooked_methods as $method) {
+            list($class_name, $method_name) = $method;
+
+            $this->removeMethodHook($class_name, $method_name);
         }
     }
 
@@ -73,6 +81,17 @@ trait native_mock {
      */
     protected function getHookedFunctions(): array {
         return $this->hooked_functions;
+    }
+
+    /**
+     * Gets a list of methods that have been hooked
+     *
+     * Each entry is an array containing two properties, the class then method name
+     *
+     * @return array A list of methods
+     */
+    protected function getHookedMethods(): array {
+        return $this->hooked_methods;
     }
 
     /**
@@ -178,6 +197,42 @@ trait native_mock {
             $this->hooked_functions,
             function ($hooked) use ($function_name) {
                 return $hooked !== $function_name;
+            }
+        );
+    }
+
+    /**
+     * Sets a hook to be called when a method is executed
+     *
+     * The hook is executed from the object context, so $this works
+     *
+     * @param string $class_name The name of the class
+     * @param string $method_name The name of the method
+     * @param \Closure $hook The hook to execute
+     *
+     * @return void
+     */
+    protected function setMethodHook(string $class_name, string $method_name, \Closure $hook) {
+        uopz_set_hook($class_name, $method_name, $hook);
+
+        $this->hooked_methods[] = [$class_name, $method_name];
+    }
+
+    /**
+     * Removes a hook from a method
+     *
+     * @param string $class_name The name of the class
+     * @param string $method_name The name of the function
+     *
+     * @return void
+     */
+    protected function removeMethodHook(string $class_name, string $method_name) {
+        uopz_unset_hook($class_name, $method_name);
+
+        $this->hooked_methods = array_filter(
+            $this->hooked_methods,
+            function ($hooked) use ($class_name, $method_name) {
+                return $hooked[0] !== $class_name && $hooked[1] !== $method_name;
             }
         );
     }
