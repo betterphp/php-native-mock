@@ -80,44 +80,53 @@ class NativeMockTest extends TestCase {
     }
 
     public function testRedefineNativeMethod() {
-        $test_object = new \DateTime();
-        $initial_value = $test_object->format('Y-m-d');
+        $method = [\DateTime::class, 'format'];
+        list($class_name, $method_name) = $method;
+
+        $test_object = new $class_name();
+        $initial_value = $test_object->$method_name('Y-m-d');
         $expected_value = 'this isn\'t a date!';
 
-        $this->redefineMethod(\DateTime::class, 'format', function () use ($expected_value) {
+        $this->redefineMethod($class_name, $method_name, function () use ($expected_value) {
             return $expected_value;
         });
 
-        $actual_value = $test_object->format('Y-m-d');
+        $actual_value = $test_object->$method_name('Y-m-d');
 
         $this->assertNotSame($initial_value, $actual_value);
         $this->assertSame($expected_value, $actual_value);
-        $this->assertContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
+        $this->assertContains($method, $this->getRedefinedMethods());
     }
 
     public function testRedefinedMethodResetAfterTest() {
-        $test_object = new \DateTime();
+        $method = [\DateTime::class, 'format'];
+        list($class_name, $method_name) = $method;
 
-        $this->assertSame(date('Y-m-d'), $test_object->format('Y-m-d'));
-        $this->assertNotContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
+        $test_object = new $class_name();
+
+        $this->assertSame(date('Y-m-d'), $test_object->$method_name('Y-m-d'));
+        $this->assertNotContains($method, $this->getRedefinedMethods());
     }
 
     public function testResetMethod() {
-        $test_object = new \DateTime();
-        $initial_value = $test_object->format('Y-m-d');
+        $method = [\DateTime::class, 'format'];
+        list($class_name, $method_name) = $method;
+
+        $test_object = new $class_name();
+        $initial_value = $test_object->$method_name('Y-m-d');
         $expected_value = 'very format, many date, wow.';
 
-        $this->redefineMethod(\DateTime::class, 'format', function () use ($expected_value) {
+        $this->redefineMethod($class_name, $method_name, function () use ($expected_value) {
             return $expected_value;
         });
 
         $this->assertSame($expected_value, $test_object->format('Y-m-d'));
-        $this->assertContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
+        $this->assertContains($method, $this->getRedefinedMethods());
 
-        $this->resetMethod(\DateTime::class, 'format');
+        $this->resetMethod($class_name, $method_name);
 
         $this->assertSame($initial_value, $test_object->format('Y-m-d'));
-        $this->assertNotContains([\DateTime::class, 'format'], $this->getRedefinedMethods());
+        $this->assertNotContains($method, $this->getRedefinedMethods());
     }
 
     public function testHookNativeFunction() {
@@ -191,19 +200,22 @@ class NativeMockTest extends TestCase {
     }
 
     public function testHookMethod() {
-        $test_object = new \DateTime();
+        $method = [\DateTime::class, 'format'];
+        list($class_name, $method_name) = $method;
+
+        $test_object = new $class_name();
         $formats_used = [];
 
-        $this->setMethodHook(\DateTime::class, 'format', function ($format) use (&$formats_used) {
+        $this->setMethodHook($class_name, $method_name, function ($format) use (&$formats_used) {
             $formats_used[] = $format;
         });
 
         $test_format = 'Y-m-d';
 
-        $test_object->format($test_format);
+        $test_object->$method_name($test_format);
 
         $this->assertContains($test_format, $formats_used);
-        $this->assertContains([\DateTime::class, 'format'], $this->getHookedMethods());
+        $this->assertContains($method, $this->getHookedMethods());
     }
 
     /**
