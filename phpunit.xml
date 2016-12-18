@@ -16,6 +16,7 @@
                 <directory>./test-results</directory>
                 <!-- Won't contain any php code but take a while to scan -->
                 <directory>./.git</directory>
+                <directory>./docs</directory>
             </exclude>
         </whitelist>
     </filter>
