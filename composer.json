@@ -1,21 +1,27 @@
 {
     "name": "betterphp/php-native-mock",
-    "version": "0.1-dev",
+    "version": "1.0.0",
+    "type": "library",
+    "license": "GPL-3.0",
     "repositories": [
         {
             "type": "vcs",
             "url": "https://github.com/betterphp/php-code-style.git"
         }
     ],
+    "require": {
+        "php": ">= 7.0.0",
+        "ext-uopz": "*"
+    },
     "require-dev": {
         "betterphp/php-code-style": "dev-master",
         "squizlabs/php_codesniffer": "~2",
-        "phpunit/phpunit": "~5",
+        "phpunit/phpunit": "~6",
         "phpdocumentor/phpdocumentor": "~2"
     },
     "autoload": {
         "psr-4": {
-            "betterphp\\native_mock\\": "./native_mock"
+            "betterphp\\native_mock\\": "./src/native_mock"
         }
     }
 }

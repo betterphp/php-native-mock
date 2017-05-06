@@ -8,6 +8,6 @@
         <template name="clean" />
     </transformer>
     <files>
-        <directory>./native_mock</directory>
+        <directory>./src/native_mock</directory>
     </files>
 </phpdoc>

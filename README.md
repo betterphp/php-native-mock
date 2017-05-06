@@ -16,21 +16,14 @@ would have some very strange effects.
 Most of the time when redefining a function sounds like a good idea - it's probably not, make sure there is no way a "normal" mocking approach won't work first.
 
 ## Installation
-The library can be included via composer by adding a custom repo and the project name
+The library can be included via composer
 ~~~json
 {
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/betterphp/php-native-mock.git"
-        }
-    ],
     "require-dev": {
-        "betterphp/php-native-mock": "dev-master"
+        "betterphp/php-native-mock": "~1"
     }
 }
 ~~~
-This will pull from the master branch whenever you run `composer update`, proper versioning is on the to-do list.
 
 ## Documentation
 Jenkins publishes a phpdoc [here](https://ci.jacekk.co.uk/view/Websites/job/PHP%20Native%20Mock/API_Docs/classes/betterphp.native_mock.native_mock.html)
