@@ -62,6 +62,23 @@ class NativeMockTest extends TestCase {
         $this->assertContains($function_name, $this->getRedefinedFunctions());
     }
 
+    public function testDisableFunction() {
+        $expected_return = [
+            'passwords.txt',
+            'recovery instructions.txt',
+        ];
+
+        $expected_folder_name = '/such/folder/very/present';
+        $expected_sort_order = SCANDIR_SORT_NONE;
+
+        $this->disableFunction('scandir', $expected_return, [&$actual_folder_name, &$actual_sort_order]);
+
+        scandir($expected_folder_name, $expected_sort_order);
+
+        $this->assertSame($expected_folder_name, $actual_folder_name);
+        $this->assertSame($expected_sort_order, $actual_sort_order);
+    }
+
     public function testResetfunction() {
         $expected_value = 'crikey this isn\'t a file';
         $function_name = 'file_get_contents';
@@ -96,6 +113,18 @@ class NativeMockTest extends TestCase {
         $this->assertNotSame($initial_value, $actual_value);
         $this->assertSame($expected_value, $actual_value);
         $this->assertContains($method, $this->getRedefinedMethods());
+    }
+
+    public function testRedefineMethod() {
+        $expected_return = '10/10/2010';
+        $expected_format = 'd/m/Y';
+
+        $this->disableMethod(\DateTime::class, 'format', $expected_return, [&$actual_format]);
+
+        $actual_return = (new \DateTime())->format($expected_format);
+
+        $this->assertSame($expected_return, $actual_return);
+        $this->assertSame($expected_format, $actual_format);
     }
 
     public function testRedefinedMethodResetAfterTest() {

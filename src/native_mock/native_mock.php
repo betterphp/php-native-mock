@@ -95,6 +95,28 @@ trait native_mock {
     }
 
     /**
+     * Used to get a function to be used by the diable function feature
+     *
+     * @param mixed $return_value The value that should be returned
+     * @param array $capture_params A list of variables to store the function parameters in
+     *
+     * @return \Closure The function
+     */
+    private function getDisabledFunctionClosure(&$return_value, array &$capture_params): \Closure {
+        return function (...$params) use ($return_value, &$capture_params) {
+            if ($capture_params !== null) {
+                $total_params = count($params);
+
+                for ($i = 0; $i < $total_params; ++$i) {
+                    $capture_params[$i] = $params[$i];
+                }
+            }
+
+            return $return_value;
+        };
+    }
+
+    /**
      * Redefined a built-in or user defined function
      *
      * It's a good idea to make the new function accept either no parameters
@@ -109,6 +131,24 @@ trait native_mock {
         uopz_set_return($function_name, $replacement, true);
 
         $this->redefined_functions[] = $function_name;
+    }
+
+    /**
+     * Disables a build-in or user defined function
+     *
+     * $capture_params should be set to an array of variable references in the order of the function parameters
+     * For example for the scandir() function something like this could be done
+     *
+     * $this->disableFunction('scandir', ['file1.txt', 'file2.txt'], [&$directory, &$sort_order]);
+     *
+     * @param string $function_name The name of the function
+     * @param mixed $return_value The value that the function should be returned, defaults to null
+     * @param array $capture_params An array of variables to store the function params in
+     *
+     * @return void
+     */
+    protected function disableFunction(string $function_name, $return_value = null, array $capture_params = null) {
+        $this->redefineFunction($function_name, $this->getDisabledFunctionClosure($return_value, $capture_params));
     }
 
     /**
@@ -148,6 +188,34 @@ trait native_mock {
         uopz_set_return($class_name, $method_name, $replacement, true);
 
         $this->redefined_methods[] = [$class_name, $method_name];
+    }
+
+    /**
+     * Disabled a built-in or user defined method
+     *
+     * $capture_params should be set to an array of variable references in the order of the function parameters
+     * For example for the DateTime::format() method something like this could be done
+     *
+     * $this->disableMethod(\DateTime::class, 'format', '10/10/2010', [&$actual_format]);
+     *
+     * @param string $class_name The name of the class
+     * @param string $method_name The name of the method in the class
+     * @param mixed $return_value The value that the function should be returned, defaults to null
+     * @param array $capture_params An array of variables to store the function params in
+     *
+     * @return void
+     */
+    protected function disableMethod(
+        string $class_name,
+        string $method_name,
+        $return_value = null,
+        array $capture_params = null
+    ) {
+        $this->redefineMethod(
+            $class_name,
+            $method_name,
+            $this->getDisabledFunctionClosure($return_value, $capture_params)
+        );
     }
 
     /**
