@@ -1,6 +1,6 @@
 {
     "name": "betterphp/php-native-mock",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "type": "library",
     "license": "GPL-3.0",
     "description": "PHP Native Mock is a helper class that allows for easy mocking of native PHP functions and class methods in unit tests using the UOPZ extension.",
